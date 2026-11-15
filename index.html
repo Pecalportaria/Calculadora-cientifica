@@ -21,7 +21,10 @@ html,body{height:100%;margin:0}
 body{background:var(--page);display:flex;justify-content:center;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .calc{position:relative;display:flex;flex-direction:column;gap:10px;width:100%;max-width:440px;max-height:900px;margin:auto 0;height:100%;background:var(--body);padding:12px;border-radius:18px;overflow:hidden}
 .lcd{background:var(--lcd);color:var(--ink);border-radius:10px;padding:8px 14px 10px;box-shadow:inset 0 2px 6px rgba(0,0,0,.35);font-family:ui-monospace,"Cascadia Mono","Roboto Mono",Menlo,monospace}
-.flags{display:flex;gap:12px;font-size:11px;min-height:14px;opacity:.8}
+.flags{display:flex;align-items:center;gap:12px;font-size:11px;min-height:14px;opacity:.9}
+.ft{margin-left:auto;display:flex;gap:6px}
+.fb{background:transparent;color:var(--ink);border:1px solid rgba(28,37,18,.5);border-radius:6px;padding:2px 9px;font-size:12px}
+.fb.on{background:var(--ink);color:var(--lcd)}
 .ex{font-size:18px;text-align:right;overflow-x:auto;white-space:nowrap;min-height:26px;scrollbar-width:none}
 .res{font-size:38px;text-align:right;overflow-x:auto;white-space:nowrap;min-height:48px;scrollbar-width:none}
 .keys{flex:1;display:grid;grid-template-columns:repeat(5,1fr);grid-auto-rows:1fr;gap:7px;min-height:0}
@@ -54,7 +57,7 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .basic .keys{grid-template-columns:repeat(4,1fr)}
 .basic .eq{grid-column:auto;grid-row:auto}
 .basic .keys button{font-size:24px}
-.isconv .lcd,.isconv .keys,.istab .lcd,.istab .keys{display:none}
+.isconv .lcd,.isconv .keys,.istab .lcd,.istab .keys,.isesp .lcd,.isesp .keys{display:none}
 .conv{flex:1;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0}
 .conv select,.conv input{background:var(--dark);color:var(--txt);border:0;border-radius:9px;padding:14px 12px;font:inherit;font-size:17px;min-width:0}
 .conv input{background:var(--bone);color:#1d1f22;font-size:22px;font-weight:600;flex:1}
@@ -92,6 +95,17 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .tl{display:flex;flex-wrap:wrap;gap:6px;font-size:11px}
 .tl span{display:flex;align-items:center;gap:4px}
 .tl i{width:10px;height:10px;border-radius:3px;display:inline-block}
+.esp{flex:1;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0;color:var(--txt)}
+.esp svg{width:100%;height:auto;flex:none;display:block}
+.esp select,.esp input{background:var(--dark);color:var(--txt);border:0;border-radius:9px;padding:12px;font:inherit;font-size:16px;min-width:0}
+.esp input{background:var(--bone);color:#1d1f22;font-weight:600;flex:1}
+.esp .cr select{width:46%}
+.ec,.eo{background:var(--dark);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:6px;flex:none}
+.ec h3{margin:0 0 2px;font-size:22px;padding-left:10px;border-left:6px solid}
+.ec p,.eo p{margin:0;font-size:14px;line-height:1.5;white-space:pre-line}
+.ec ul{margin:2px 0 0;padding-left:20px;font-size:14px;line-height:1.5}
+.eo small{opacity:.75}
+.cdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 .md{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:14px}
 .mp{background:var(--body);color:var(--txt);border-radius:14px;width:100%;max-height:100%;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
 .mp .ti{max-height:none;overflow:visible;background:none;padding:0;min-height:0;gap:10px}
@@ -106,9 +120,9 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 </head>
 <body>
 <main class="calc">
-  <nav class="tabs" aria-label="Modo"><button type="button" data-m="sci" class="on">Científica</button><button type="button" data-m="basic">Comum</button><button type="button" data-m="conv">Conversor</button><button type="button" data-m="tab">Tabela</button><button type="button" id="th">Hist</button><button type="button" id="tv" class="on" aria-pressed="true" aria-label="Vibração">📳</button><button type="button" id="tf" aria-label="Tela cheia">⛶</button></nav>
+  <nav class="tabs" aria-label="Modo"><button type="button" data-m="sci" class="on">Científica</button><button type="button" data-m="basic">Comum</button><button type="button" data-m="conv">Conversor</button><button type="button" data-m="tab">Tabela</button><button type="button" data-m="esp">Espectro</button></nav>
   <div class="lcd">
-    <div class="flags"><span id="fd">DEG</span><span id="fi"></span></div>
+    <div class="flags"><span id="fd">DEG</span><span id="fi"></span><span class="ft"><button type="button" class="fb" id="th">Hist</button><button type="button" class="fb on" id="tv" aria-pressed="true" aria-label="Vibração">📳</button><button type="button" class="fb" id="tf" aria-label="Tela cheia">⛶</button></span></div>
     <div class="ex" id="ex"></div>
     <div class="res" id="res">0</div>
   </div>
@@ -125,6 +139,11 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
     <div id="crw" hidden><small>Cotação: quanto vale 1 da moeda de origem na moeda de destino</small><input id="cr" inputmode="decimal" placeholder="ex.: 5,50" aria-label="Cotação"></div>
     <button id="cu" type="button">Usar na calculadora</button>
     </div>
+  </section>
+  <section class="esp" id="esp" hidden aria-label="Espectro eletromagnético">
+    <div id="ev"></div>
+    <div class="ec" id="ec"></div>
+    <div class="eo"><b>Calcular a partir de um valor</b><small>f = c/λ e E = h·f</small><div class="cr"><input id="ei" inputmode="decimal" value="550" aria-label="Valor"><select id="eu" aria-label="Unidade"></select></div><p id="eq"></p></div>
   </section>
   <section class="tbl" id="tbl" hidden aria-label="Tabela periódica">
     <div class="md" id="md" hidden><div class="mp" role="dialog" aria-modal="true" aria-label="Dados do elemento"><div class="ti" id="ti"></div></div></div>
@@ -306,10 +325,11 @@ let mode='sci';
 const BASIC={4:1,3:2,19:3,23:4,20:5,21:6,22:7,28:8,25:9,26:10,27:11,33:12,30:13,31:14,32:15,37:16,35:17,36:18,34:19};
 function setMode(m){
  mode=m;
+ if(m==='tab')initTbl();if(m==='esp')initEsp();if(m==='conv')initConv();
  document.querySelectorAll('.tabs [data-m]').forEach(b=>{const on=b.dataset.m===m;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
- const c=$('.calc');c.classList.toggle('basic',m==='basic');c.classList.toggle('isconv',m==='conv');c.classList.toggle('istab',m==='tab');
+ const c=$('.calc');c.classList.toggle('basic',m==='basic');c.classList.toggle('isconv',m==='conv');c.classList.toggle('istab',m==='tab');c.classList.toggle('isesp',m==='esp');
  K.forEach((k,i)=>{const b=m==='basic';k.el.hidden=b&&!(i in BASIC);k.el.style.order=b&&i in BASIC?BASIC[i]:''});
- $('#conv').hidden=m!=='conv';$('#tbl').hidden=m!=='tab';
+ $('#conv').hidden=m!=='conv';$('#tbl').hidden=m!=='tab';$('#esp').hidden=m!=='esp';
  if(m==='conv')showConv(false);
  try{localStorage.setItem('calc-mode',m)}catch(e){}
 }
@@ -369,6 +389,8 @@ function showEl(e){
  const hr=document.createElement('div');hr.className='hr';hr.append(h,x);
  ti.append(hr,p,p2,b);
 }
+function initTbl(){
+ if(initTbl.d)return;initTbl.d=1;
 E.forEach(e=>{
  const[r,c]=pos(e.z),b=document.createElement('button');
  b.type='button';b.className='el';b.style.cssText='grid-row:'+r+';grid-column:'+c+';--c:'+CT[cat(e.z)][1];
@@ -386,6 +408,7 @@ $('#ts').addEventListener('input',()=>{
  E.forEach(e=>e.el.style.opacity=m.includes(e)?'':'.2');
  tsFirst=q&&m.length?m[0]:null;
 });
+}
 
 let tsFirst=null;
 let elOpen=false,elPushed=false;
@@ -400,6 +423,70 @@ function hideEl(viaBack){
 addEventListener('popstate',()=>{if(elOpen){elPushed=false;hideEl(true)}});
 $('#md').onclick=ev=>{if(ev.target.id==='md')hideEl()};
 $('#ts').addEventListener('keydown',ev=>{if(ev.key==='Enter'&&tsFirst){ev.preventDefault();$('#ts').blur();showEl(tsFirst)}});
+
+/* ---------- espectro eletromagnético ---------- */
+const CL=299792458,HE=4.135667696e-15;
+const RG=[
+ {n:'Ondas baixas',a:3,b:3e5,w:5,col:'#f3efb5',tx:'#1d1f22',fs:'3 Hz – 300 kHz',ls:'100 000 km – 1 km',io:'Não ionizante',ap:['Rede elétrica (50/60 Hz)','Comunicação com submarinos','Navegação e rádio AM de ondas longas']},
+ {n:'Rádio',a:3e5,b:3e8,w:3,col:'#f2ee45',tx:'#1d1f22',fs:'300 kHz – 300 MHz',ls:'1 km – 1 m',io:'Não ionizante',ap:['Rádio AM e FM','TV aberta (VHF)','Radioamador e aviação']},
+ {n:'Micro-ondas',a:3e8,b:3e11,w:3,col:'#f5b21b',tx:'#1d1f22',fs:'300 MHz – 300 GHz',ls:'1 m – 1 mm',io:'Não ionizante',ap:['Wi-Fi, Bluetooth e celular','Forno de micro-ondas','Radar e satélites (GPS)']},
+ {n:'Infravermelho',a:3e11,b:4.28e14,w:3.2,col:'#e5483f',tx:'#fff',fs:'300 GHz – 428 THz',ls:'1 mm – 700 nm',io:'Não ionizante',ap:['Controle remoto','Visão noturna e termografia','Calor emitido por corpos quentes','Fibras ópticas']},
+ {n:'Luz visível',a:4.28e14,b:7.5e14,w:1.2,g:1,col:'#43a047',tx:'#fff',fs:'428 THz – 750 THz',ls:'700 nm – 400 nm',io:'Não ionizante',ap:['Visão humana','Fotossíntese','Lasers e telas']},
+ {n:'Ultravioleta',a:7.5e14,b:3e16,w:1.8,col:'#a56ad8',tx:'#fff',fs:'750 THz – 30 PHz',ls:'400 nm – 10 nm',io:'Parcialmente ionizante (a parte mais energética)',ap:['Bronzeamento e queimaduras','Esterilização','Luz negra','Produção de vitamina D']},
+ {n:'Raios X',a:3e16,b:3e19,w:3,col:'#8c8c8c',tx:'#fff',fs:'30 PHz – 30 EHz',ls:'10 nm – 10 pm',io:'Ionizante',ap:['Radiografia e tomografia','Segurança em aeroportos','Cristalografia']},
+ {n:'Raios gama',a:3e19,b:1e30,w:4,col:'#141414',bc:'#888',tx:'#fff',fs:'acima de 30 EHz',ls:'menos de 10 pm',io:'Ionizante',ap:['Radioterapia','Medicina nuclear (PET)','Esterilização de materiais','Origem: núcleos atômicos e astros']}
+];
+const VC=[['Vermelho','700 – 620 nm','#e53935'],['Laranja','620 – 590 nm','#fb8c00'],['Amarelo','590 – 570 nm','#fdd835'],['Verde','570 – 495 nm','#43a047'],['Azul','495 – 450 nm','#1e88e5'],['Violeta','450 – 400 nm','#7e57c2']];
+const supe=e=>String(e).replace(/[-0-9]/g,c=>'⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(c)]);
+const nf=v=>{const e=Math.floor(Math.log10(v));if(e>=-2&&e<=5)return String(parseFloat(v.toPrecision(4))).replace('.',',');return parseFloat((v/Math.pow(10,e)).toPrecision(4)).toString().replace('.',',')+'×10'+supe(e)};
+function pickReg(i){
+ const r=RG[i],c=$('#ec');
+ document.querySelectorAll('#ev [data-i]').forEach(g=>g.querySelector('rect').setAttribute('stroke',+g.dataset.i===i?'#fff':'none'));
+ c.textContent='';
+ const h=document.createElement('h3');h.textContent=r.n;h.style.borderLeftColor=r.bc||r.col;c.appendChild(h);
+ const P=t=>{const p=document.createElement('p');p.textContent=t;c.appendChild(p)};
+ P('Frequência: '+r.fs);P('Comprimento de onda: '+r.ls);
+ P('Energia do fóton: '+(r.b>=1e30?'acima de '+nf(HE*r.a):nf(HE*r.a)+' – '+nf(HE*r.b))+' eV');
+ P(r.io);
+ const L=(t,items,dot)=>{P(t);const u=document.createElement('ul');items.forEach(it=>{const li=document.createElement('li');if(dot){const s=document.createElement('span');s.className='cdot';s.style.background=it[2];li.append(s,it[0]+' · '+it[1])}else li.textContent=it;u.appendChild(li)});c.appendChild(u)};
+ L('Aplicações e exemplos:',r.ap);
+ if(r.g)L('Cores:',VC,true);
+}
+function initEsp(){
+ if(initEsp.d)return;initEsp.d=1;
+(function(){
+ const W=336,tot=RG.reduce((s,r)=>s+r.w,0);
+ let x=0,xi=0,h='<defs><linearGradient id="gv" x1="0" x2="1"><stop offset="0" stop-color="#e53935"/><stop offset=".2" stop-color="#fb8c00"/><stop offset=".4" stop-color="#fdd835"/><stop offset=".6" stop-color="#43a047"/><stop offset=".8" stop-color="#1e88e5"/><stop offset="1" stop-color="#7e57c2"/></linearGradient></defs>';
+ RG.forEach((r,i)=>{
+  const wd=W*r.w/tot;if(i===5)xi=x+wd*.45;
+  h+='<g data-i="'+i+'" role="button" tabindex="0" aria-label="'+r.n+'" style="cursor:pointer"><rect x="'+x.toFixed(1)+'" y="0" width="'+wd.toFixed(1)+'" height="86" fill="'+(r.g?'url(#gv)':r.col)+'" stroke="none" stroke-width="2"/><text transform="translate('+(x+wd/2+3.5).toFixed(1)+',43) rotate(-90)" text-anchor="middle" font-size="'+(wd<20?9:11)+'" font-weight="700" fill="'+r.tx+'">'+r.n+'</text></g>';
+  x+=wd;
+ });
+ let ph=0,d='';
+ for(let i=0;i<=W*2;i++){const px=i/2;ph+=0.025*Math.pow(30,px/W);d+=(i?'L':'M')+px.toFixed(1)+' '+(112-17*Math.sin(ph)).toFixed(1)}
+ h+='<path d="'+d+'" fill="none" stroke="currentColor" stroke-width="1.6"/>';
+ h+='<rect x="0" y="134" width="'+xi.toFixed(1)+'" height="18" fill="#3b5f8a"/><rect x="'+xi.toFixed(1)+'" y="134" width="'+(W-xi).toFixed(1)+'" height="18" fill="#d94a4a"/>';
+ h+='<text x="'+(xi/2).toFixed(1)+'" y="147" text-anchor="middle" font-size="10" fill="#fff">Não ionizante</text><text x="'+((xi+W)/2).toFixed(1)+'" y="147" text-anchor="middle" font-size="10" fill="#fff">Ionizante</text>';
+ h+='<text x="0" y="166" font-size="9" fill="currentColor" opacity=".75">baixa frequência · grande comprimento de onda</text><text x="'+W+'" y="166" text-anchor="end" font-size="9" fill="currentColor" opacity=".75">alta frequência →</text>';
+ $('#ev').innerHTML='<svg viewBox="0 0 '+W+' 172" role="img" aria-label="Espectro eletromagnético">'+h+'</svg>';
+ document.querySelectorAll('#ev [data-i]').forEach(g=>{g.addEventListener('click',()=>pickReg(+g.dataset.i));g.addEventListener('keydown',ev=>{if(ev.key==='Enter')pickReg(+g.dataset.i)})});
+})();
+const EU=[['Hz','f',1],['kHz','f',1e3],['MHz','f',1e6],['GHz','f',1e9],['THz','f',1e12],['PHz','f',1e15],['km','l',1e3],['m','l',1],['mm','l',1e-3],['µm','l',1e-6],['nm','l',1e-9],['pm','l',1e-12],['eV','e',1],['keV','e',1e3],['MeV','e',1e6]];
+{const G={f:'Frequência',l:'Comprimento de onda',e:'Energia'},og={};
+ EU.forEach((u,i)=>{if(!og[u[1]]){og[u[1]]=document.createElement('optgroup');og[u[1]].label=G[u[1]];$('#eu').appendChild(og[u[1]])}const o=document.createElement('option');o.value=i;o.textContent=u[0];og[u[1]].appendChild(o)});
+ $('#eu').value=10;}
+function espCalc(){
+ const v=parseFloat($('#ei').value.replace(',','.')),u=EU[+$('#eu').value];
+ if(!(v>0)){$('#eq').textContent='—';return}
+ const f=u[1]==='f'?v*u[2]:u[1]==='l'?CL/(v*u[2]):v*u[2]/HE;
+ const i=RG.findIndex(r=>f>=r.a&&f<r.b);
+ $('#eq').textContent='Frequência: '+nf(f)+' Hz\nComprimento de onda: '+nf(CL/f)+' m\nEnergia do fóton: '+nf(HE*f)+' eV\nRegião: '+(i<0?'fora das faixas listadas':RG[i].n);
+ if(i>=0)pickReg(i);
+}
+$('#ei').addEventListener('input',espCalc);
+$('#eu').addEventListener('change',espCalc);
+espCalc();
+}
 
 /* ---------- tela cheia ---------- */
 const tf=$('#tf');
@@ -478,11 +565,14 @@ function conv(){
  }
  $('#co').textContent=r;
 }
-Object.keys(U).forEach(n=>{const o=document.createElement('option');o.value=o.textContent=n;$('#cc').appendChild(o)});
 function showConv(on){$('#cp').hidden=!on;$('#cm').hidden=on;$('#cmh').hidden=on;$('#cbt').textContent=$('#cc').value}
-Object.keys(U).forEach(n=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.onclick=()=>{$('#cc').value=n;fillUnits();conv();showConv(true)};$('#cm').appendChild(b)});
 $('#cbk').onclick=()=>showConv(false);
-fillUnits();
+function initConv(){
+ if(initConv.d)return;initConv.d=1;
+ Object.keys(U).forEach(n=>{const o=document.createElement('option');o.value=o.textContent=n;$('#cc').appendChild(o)});
+ Object.keys(U).forEach(n=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.onclick=()=>{$('#cc').value=n;fillUnits();conv();showConv(true)};$('#cm').appendChild(b)});
+ fillUnits();
+}
 $('#cc').onchange=()=>{fillUnits();conv()};
 ['#cv','#cf','#ct'].forEach(s=>$(s).addEventListener(s==='#cv'?'input':'change',conv));
 $('#cs').onclick=()=>{const a=$('#cf').value;$('#cf').value=$('#ct').value;$('#ct').value=a;conv()};
@@ -498,6 +588,8 @@ $('#cu').onclick=()=>{const r=$('#co').textContent;if(r==='—')return;setMode('
 let saved='sci';
 try{saved=localStorage.getItem('calc-mode')||'sci'}catch(e){}
 setMode(saved);
+const idle=f=>'requestIdleCallback' in window?requestIdleCallback(f,{timeout:6000}):setTimeout(f,3000);
+idle(()=>{initConv();idle(()=>{initTbl();idle(initEsp)})});
 sync();render();
 if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
 </script>

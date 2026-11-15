@@ -45,7 +45,7 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .he span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;opacity:.85}
 .vazio{opacity:.6;font-size:14px}
 .tabs{display:flex;gap:6px}
-.tabs button{flex:1;font-size:13px;padding:9px 2px;background:#2f333a}
+.tabs button{flex:1;font-size:12px;padding:9px 2px;background:#2f333a}
 .tabs #th{flex:.55}
 .tabs #tv{flex:.35}
 .tabs #tf{flex:.35}
@@ -54,7 +54,7 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .basic .keys{grid-template-columns:repeat(4,1fr)}
 .basic .eq{grid-column:auto;grid-row:auto}
 .basic .keys button{font-size:24px}
-.isconv .lcd,.isconv .keys{display:none}
+.isconv .lcd,.isconv .keys,.istab .lcd,.istab .keys{display:none}
 .conv{flex:1;display:flex;flex-direction:column;gap:12px;overflow:auto;min-height:0}
 .conv select,.conv input{background:var(--dark);color:var(--txt);border:0;border-radius:9px;padding:14px 12px;font:inherit;font-size:17px;min-width:0}
 .conv input{background:var(--bone);color:#1d1f22;font-size:22px;font-weight:600;flex:1}
@@ -73,12 +73,26 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .cb{display:flex;align-items:center;gap:12px;color:var(--txt)}
 .cb button{padding:10px 14px;font-size:14px;background:#2f333a}
 .cb b{font-size:18px}
+.tbl{flex:1;display:flex;flex-direction:column;gap:10px;min-height:0;color:var(--txt)}
+.ti{background:var(--dark);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:112px;font-size:14px}
+.th{font-size:20px;font-weight:700;padding-left:8px}
+.tp{font-size:13px;white-space:pre-line;opacity:.9}
+.ti button{align-self:flex-start;padding:8px 12px;font-size:13px;background:var(--amber);color:#2a1d04;font-weight:700}
+#ts{background:var(--bone);color:#1d1f22;border:0;border-radius:9px;padding:10px 12px;font:inherit;font-size:16px;min-width:0}
+.tw{flex:1;min-height:0;overflow:auto}
+.tg{display:grid;grid-template-columns:repeat(18,40px);grid-template-rows:repeat(7,44px) 14px repeat(2,44px);gap:3px;width:max-content}
+.el{background:var(--c);color:#1d1f22;font-weight:700;font-size:15px;position:relative;border-radius:5px;padding:0}
+.el small{position:absolute;top:2px;left:3px;font-size:9px;font-weight:600}
+.ph{font-size:9px;display:flex;align-items:center;justify-content:center;opacity:.7;border:1px dashed #4a505a;border-radius:5px}
+.tl{display:flex;flex-wrap:wrap;gap:6px;font-size:11px}
+.tl span{display:flex;align-items:center;gap:4px}
+.tl i{width:10px;height:10px;border-radius:3px;display:inline-block}
 @media(prefers-reduced-motion:no-preference){button{transition:filter .08s}}
 </style>
 </head>
 <body>
 <main class="calc">
-  <nav class="tabs" aria-label="Modo"><button type="button" data-m="sci" class="on">Científica</button><button type="button" data-m="basic">Comum</button><button type="button" data-m="conv">Conversor</button><button type="button" id="th">Hist</button><button type="button" id="tv" class="on" aria-pressed="true" aria-label="Vibração">📳</button><button type="button" id="tf" aria-label="Tela cheia">⛶</button></nav>
+  <nav class="tabs" aria-label="Modo"><button type="button" data-m="sci" class="on">Científica</button><button type="button" data-m="basic">Comum</button><button type="button" data-m="conv">Conversor</button><button type="button" data-m="tab">Tabela</button><button type="button" id="th">Hist</button><button type="button" id="tv" class="on" aria-pressed="true" aria-label="Vibração">📳</button><button type="button" id="tf" aria-label="Tela cheia">⛶</button></nav>
   <div class="lcd">
     <div class="flags"><span id="fd">DEG</span><span id="fi"></span></div>
     <div class="ex" id="ex"></div>
@@ -97,6 +111,12 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
     <div id="crw" hidden><small>Cotação: quanto vale 1 da moeda de origem na moeda de destino</small><input id="cr" inputmode="decimal" placeholder="ex.: 5,50" aria-label="Cotação"></div>
     <button id="cu" type="button">Usar na calculadora</button>
     </div>
+  </section>
+  <section class="tbl" id="tbl" hidden aria-label="Tabela periódica">
+    <div class="ti" id="ti">Toque em um elemento da tabela</div>
+    <input id="ts" type="search" placeholder="Buscar nome, símbolo ou número" aria-label="Buscar elemento">
+    <div class="tw"><div class="tg" id="tg"></div></div>
+    <div class="tl" id="tl"></div>
   </section>
   <section class="hist" id="hist" aria-label="Histórico">
     <div class="hh"><b>Histórico</b><span><button id="hc">Limpar</button><button id="hx">Fechar</button></span></div>
@@ -272,14 +292,14 @@ const BASIC={4:1,3:2,19:3,23:4,20:5,21:6,22:7,28:8,25:9,26:10,27:11,33:12,30:13,
 function setMode(m){
  mode=m;
  document.querySelectorAll('.tabs [data-m]').forEach(b=>{const on=b.dataset.m===m;b.classList.toggle('on',on);b.setAttribute('aria-pressed',on)});
- const c=$('.calc');c.classList.toggle('basic',m==='basic');c.classList.toggle('isconv',m==='conv');
+ const c=$('.calc');c.classList.toggle('basic',m==='basic');c.classList.toggle('isconv',m==='conv');c.classList.toggle('istab',m==='tab');
  K.forEach((k,i)=>{const b=m==='basic';k.el.hidden=b&&!(i in BASIC);k.el.style.order=b&&i in BASIC?BASIC[i]:''});
- $('#conv').hidden=m!=='conv';
+ $('#conv').hidden=m!=='conv';$('#tbl').hidden=m!=='tab';
  if(m==='conv')showConv(false);
  try{localStorage.setItem('calc-mode',m)}catch(e){}
 }
 document.querySelectorAll('.tabs [data-m]').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
-$('#th').onclick=()=>{if(mode==='conv')setMode('sci');openHist()};
+$('#th').onclick=()=>{if(mode==='conv'||mode==='tab')setMode('sci');openHist()};
 
 /* ---------- vibração ---------- */
 let vib=true;
@@ -288,6 +308,47 @@ const buzz=p=>{if(vib&&navigator.vibrate){try{navigator.vibrate(p)}catch(e){}}};
 const tv=$('#tv');
 tv.classList.toggle('on',vib);tv.setAttribute('aria-pressed',vib);
 tv.onclick=()=>{vib=!vib;tv.classList.toggle('on',vib);tv.setAttribute('aria-pressed',vib);try{localStorage.setItem('calc-vib',vib?'1':'0')}catch(e){}if(vib){let ok=false;try{ok=navigator.vibrate&&navigator.vibrate(120)}catch(e){}if(!ok)$('#ex').textContent='Vibração não disponível neste navegador'}};
+
+/* ---------- tabela periódica ---------- */
+const E='H Hidrogênio 1.008|He Hélio 4.0026|Li Lítio 6.94|Be Berílio 9.0122|B Boro 10.81|C Carbono 12.011|N Nitrogênio 14.007|O Oxigênio 15.999|F Flúor 18.998|Ne Neônio 20.180|Na Sódio 22.990|Mg Magnésio 24.305|Al Alumínio 26.982|Si Silício 28.085|P Fósforo 30.974|S Enxofre 32.06|Cl Cloro 35.45|Ar Argônio 39.948|K Potássio 39.098|Ca Cálcio 40.078|Sc Escândio 44.956|Ti Titânio 47.867|V Vanádio 50.942|Cr Cromo 51.996|Mn Manganês 54.938|Fe Ferro 55.845|Co Cobalto 58.933|Ni Níquel 58.693|Cu Cobre 63.546|Zn Zinco 65.38|Ga Gálio 69.723|Ge Germânio 72.630|As Arsênio 74.922|Se Selênio 78.971|Br Bromo 79.904|Kr Criptônio 83.798|Rb Rubídio 85.468|Sr Estrôncio 87.62|Y Ítrio 88.906|Zr Zircônio 91.224|Nb Nióbio 92.906|Mo Molibdênio 95.95|Tc Tecnécio (98)|Ru Rutênio 101.07|Rh Ródio 102.91|Pd Paládio 106.42|Ag Prata 107.87|Cd Cádmio 112.41|In Índio 114.82|Sn Estanho 118.71|Sb Antimônio 121.76|Te Telúrio 127.60|I Iodo 126.90|Xe Xenônio 131.29|Cs Césio 132.91|Ba Bário 137.33|La Lantânio 138.91|Ce Cério 140.12|Pr Praseodímio 140.91|Nd Neodímio 144.24|Pm Promécio (145)|Sm Samário 150.36|Eu Európio 151.96|Gd Gadolínio 157.25|Tb Térbio 158.93|Dy Disprósio 162.50|Ho Hólmio 164.93|Er Érbio 167.26|Tm Túlio 168.93|Yb Itérbio 173.05|Lu Lutécio 174.97|Hf Háfnio 178.49|Ta Tântalo 180.95|W Tungstênio 183.84|Re Rênio 186.21|Os Ósmio 190.23|Ir Irídio 192.22|Pt Platina 195.08|Au Ouro 196.97|Hg Mercúrio 200.59|Tl Tálio 204.38|Pb Chumbo 207.2|Bi Bismuto 208.98|Po Polônio (209)|At Astato (210)|Rn Radônio (222)|Fr Frâncio (223)|Ra Rádio (226)|Ac Actínio (227)|Th Tório 232.04|Pa Protactínio 231.04|U Urânio 238.03|Np Netúnio (237)|Pu Plutônio (244)|Am Amerício (243)|Cm Cúrio (247)|Bk Berquélio (247)|Cf Califórnio (251)|Es Einstênio (252)|Fm Férmio (257)|Md Mendelévio (258)|No Nobélio (259)|Lr Laurencío (266)|Rf Rutherfórdio (267)|Db Dúbnio (268)|Sg Seabórgio (269)|Bh Bóhrio (270)|Hs Hássio (277)|Mt Meitnério (278)|Ds Darmstádtio (281)|Rg Roentgenênio (282)|Cn Copernício (285)|Nh Nihônio (286)|Fl Fleróvio (289)|Mc Moscóvio (290)|Lv Livermorío (293)|Ts Tenesso (294)|Og Oganessônio (294)'.split('|').map((s,i)=>{const[a,n,m]=s.split(' ');return{z:i+1,s:a,n,m}});
+const CT={nm:['Não metal','#9ad0a0'],ng:['Gás nobre','#b9a5e0'],ha:['Halogênio','#e0d27a'],al:['Metal alcalino','#e89a8a'],at:['Alcalino-terroso','#e8b878'],sm:['Semimetal','#7fc9c4'],tr:['Metal de transição','#8fb4e0'],om:['Outros metais','#b9c3cf'],la:['Lantanídeo','#e0a5c8'],ac:['Actínideo','#d68fb0']};
+const inl=(z,l)=>l.includes(z),rg=(z,a,b)=>z>=a&&z<=b;
+const cat=z=>inl(z,[1,6,7,8,15,16,34])?'nm':inl(z,[2,10,18,36,54,86,118])?'ng':inl(z,[9,17,35,53,85,117])?'ha':inl(z,[3,11,19,37,55,87])?'al':inl(z,[4,12,20,38,56,88])?'at':inl(z,[5,14,32,33,51,52])?'sm':rg(z,57,71)?'la':rg(z,89,103)?'ac':(rg(z,21,30)||rg(z,39,48)||rg(z,72,80)||rg(z,104,112))?'tr':'om';
+function pos(z){
+ if(z===1)return[1,1];if(z===2)return[1,18];
+ if(z<=4)return[2,z-2];if(z<=10)return[2,z+8];
+ if(z<=12)return[3,z-10];if(z<=18)return[3,z];
+ if(z<=36)return[4,z-18];if(z<=54)return[5,z-36];
+ if(z<=56)return[6,z-54];if(z<=71)return[9,z-54];
+ if(z<=86)return[6,z-68];if(z<=88)return[7,z-86];
+ if(z<=103)return[10,z-86];return[7,z-100];
+}
+const nz=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase();
+function showEl(e){
+ const[r,c]=pos(e.z),f=rg(e.z,57,71)||rg(e.z,89,103),k=cat(e.z);
+ const st=e.z>=104?'estado desconhecido':(inl(e.z,[1,2,7,8,9,10,17,18,36,54,86])?'Gás':inl(e.z,[35,80])?'Líquido':'Sólido')+' a 20 °C';
+ const ti=$('#ti');ti.textContent='';
+ const h=document.createElement('div');h.className='th';h.textContent=e.s+' · '+e.n;h.style.borderLeft='6px solid '+CT[k][1];
+ const p=document.createElement('div');p.className='tp';
+ p.textContent='Nº '+e.z+' · Massa '+e.m.replace('.',',')+' u · '+CT[k][0]+'\nGrupo '+(f?'—':c)+' · Período '+(r>=9?r-3:r)+' · '+st;
+ const b=document.createElement('button');b.type='button';b.textContent='Usar massa na calculadora';
+ b.onclick=()=>{setMode('sci');put(e.m.replace(/[()]/g,'').replace('.',','))};
+ ti.append(h,p,b);
+}
+E.forEach(e=>{
+ const[r,c]=pos(e.z),b=document.createElement('button');
+ b.type='button';b.className='el';b.style.cssText='grid-row:'+r+';grid-column:'+c+';--c:'+CT[cat(e.z)][1];
+ const sm=document.createElement('small');sm.textContent=e.z;b.append(sm,e.s);
+ b.setAttribute('aria-label',e.n);b.onclick=()=>showEl(e);e.el=b;$('#tg').appendChild(b);
+});
+[[6,'57–71'],[7,'89–103']].forEach(([r,t])=>{const d=document.createElement('div');d.className='ph';d.style.cssText='grid-row:'+r+';grid-column:3';d.textContent=t;$('#tg').appendChild(d)});
+Object.values(CT).forEach(([n,col])=>{const s=document.createElement('span'),i=document.createElement('i');i.style.background=col;s.append(i,n);$('#tl').appendChild(s)});
+$('#ts').addEventListener('input',()=>{
+ const q=nz($('#ts').value.trim());
+ const m=E.filter(e=>!q||String(e.z)===q||nz(e.s)===q||nz(e.n).includes(q));
+ E.forEach(e=>e.el.style.opacity=m.includes(e)?'':'.2');
+ if(q&&m.length===1)showEl(m[0]);
+});
 
 /* ---------- tela cheia ---------- */
 const tf=$('#tf');

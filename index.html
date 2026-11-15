@@ -66,6 +66,13 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .conv #cu{padding:14px;background:var(--amber);color:#2a1d04;font-weight:700}
 #crw{display:flex;flex-direction:column;gap:6px;font-size:13px}
 #crw input{flex:none}
+.cmh{margin:2px 0;font-size:15px;color:var(--txt)}
+.cm{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.cm button{padding:16px 8px;font-size:16px}
+.cpanel{display:flex;flex-direction:column;gap:12px}
+.cb{display:flex;align-items:center;gap:12px;color:var(--txt)}
+.cb button{padding:10px 14px;font-size:14px;background:#2f333a}
+.cb b{font-size:18px}
 @media(prefers-reduced-motion:no-preference){button{transition:filter .08s}}
 </style>
 </head>
@@ -79,12 +86,17 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
   </div>
   <div class="keys" id="keys"></div>
   <section class="conv" id="conv" hidden aria-label="Conversor de unidades">
-    <select id="cc" aria-label="Grandeza"></select>
+    <p class="cmh" id="cmh">Escolha a grandeza</p>
+    <div class="cm" id="cm"></div>
+    <select id="cc" hidden aria-label="Grandeza"></select>
+    <div class="cpanel" id="cp" hidden>
+    <div class="cb"><button id="cbk" type="button">← Grandezas</button><b id="cbt"></b></div>
     <div class="cr"><input id="cv" inputmode="decimal" value="1" aria-label="Valor"><select id="cf" aria-label="De"></select></div>
     <button id="cs" type="button" aria-label="Inverter unidades">⇅</button>
     <div class="cr"><output id="co">0</output><select id="ct" aria-label="Para"></select></div>
     <div id="crw" hidden><small>Cotação: quanto vale 1 da moeda de origem na moeda de destino</small><input id="cr" inputmode="decimal" placeholder="ex.: 5,50" aria-label="Cotação"></div>
     <button id="cu" type="button">Usar na calculadora</button>
+    </div>
   </section>
   <section class="hist" id="hist" aria-label="Histórico">
     <div class="hh"><b>Histórico</b><span><button id="hc">Limpar</button><button id="hx">Fechar</button></span></div>
@@ -243,6 +255,7 @@ $('#hc').onclick=()=>{hist=[];save();openHist()};
 
 /* ---------- teclado ---------- */
 addEventListener('keydown',e=>{
+ if(/^(INPUT|SELECT|TEXTAREA)$/.test(e.target.tagName))return;
  if(e.ctrlKey||e.metaKey||e.altKey)return;
  const k=e.key,M={'*':'×','/':'÷','-':'−','.':',','p':'π'};
  if(/^[0-9+().^!%,]$/.test(k))put(k);
@@ -262,7 +275,7 @@ function setMode(m){
  const c=$('.calc');c.classList.toggle('basic',m==='basic');c.classList.toggle('isconv',m==='conv');
  K.forEach((k,i)=>{const b=m==='basic';k.el.hidden=b&&!(i in BASIC);k.el.style.order=b&&i in BASIC?BASIC[i]:''});
  $('#conv').hidden=m!=='conv';
- if(m==='conv')conv();
+ if(m==='conv')showConv(false);
  try{localStorage.setItem('calc-mode',m)}catch(e){}
 }
 document.querySelectorAll('.tabs [data-m]').forEach(b=>b.onclick=()=>setMode(b.dataset.m));
@@ -354,6 +367,9 @@ function conv(){
  $('#co').textContent=r;
 }
 Object.keys(U).forEach(n=>{const o=document.createElement('option');o.value=o.textContent=n;$('#cc').appendChild(o)});
+function showConv(on){$('#cp').hidden=!on;$('#cm').hidden=on;$('#cmh').hidden=on;$('#cbt').textContent=$('#cc').value}
+Object.keys(U).forEach(n=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.onclick=()=>{$('#cc').value=n;fillUnits();conv();showConv(true)};$('#cm').appendChild(b)});
+$('#cbk').onclick=()=>showConv(false);
 fillUnits();
 $('#cc').onchange=()=>{fillUnits();conv()};
 ['#cv','#cf','#ct'].forEach(s=>$(s).addEventListener(s==='#cv'?'input':'change',conv));

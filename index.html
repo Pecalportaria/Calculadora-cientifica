@@ -597,6 +597,16 @@ const RG=[
 const VC=[['Vermelho','700 – 620 nm','#e53935'],['Laranja','620 – 590 nm','#fb8c00'],['Amarelo','590 – 570 nm','#fdd835'],['Verde','570 – 495 nm','#43a047'],['Azul','495 – 450 nm','#1e88e5'],['Violeta','450 – 400 nm','#7e57c2']];
 const supe=e=>String(e).replace(/[-0-9]/g,c=>'⁻⁰¹²³⁴⁵⁶⁷⁸⁹'['-0123456789'.indexOf(c)]);
 const nf=v=>{const e=Math.floor(Math.log10(v));if(e>=-2&&e<=5)return String(parseFloat(v.toPrecision(4))).replace('.',',');return parseFloat((v/Math.pow(10,e)).toPrecision(4)).toString().replace('.',',')+'×10'+supe(e)};
+const SUBT={0:'Faixas (classificação ITU):',1:'Faixas (classificação ITU):',2:'Faixas (classificação ITU):',7:'Faixas por energia (não há padrão único):'};
+const SUB={
+0:[['ELF — extremamente baixa','3 – 30 Hz (100 000 – 10 000 km)','#f6f2c8','comunicação com submarinos'],['SLF — super baixa','30 – 300 Hz (10 000 – 1000 km)','#f3efb5','rede elétrica (50/60 Hz)'],['ULF — ultra baixa','300 Hz – 3 kHz (1000 – 100 km)','#ece6a0','comunicação em minas e geofísica'],['VLF — muito baixa','3 – 30 kHz (100 – 10 km)','#e6dd8a','navegação e submarinos'],['LF — baixa','30 – 300 kHz (10 – 1 km)','#dfd574','sinais de hora e rádio de ondas longas']],
+1:[['MF — média frequência','300 kHz – 3 MHz (1 km – 100 m)','#f6f09a','rádio AM'],['HF — alta frequência','3 – 30 MHz (100 – 10 m)','#f2ee45','ondas curtas e radioamador'],['VHF — muito alta frequência','30 – 300 MHz (10 – 1 m)','#e3de28','rádio FM, TV aberta e aviação']],
+2:[['UHF — ultra alta frequência','300 MHz – 3 GHz (1 m – 10 cm)','#f8c860','celular, TV digital, Wi-Fi de 2,4 GHz e forno de micro-ondas'],['SHF — super alta frequência','3 – 30 GHz (10 – 1 cm)','#f5b21b','Wi-Fi de 5 GHz, radar e satélites'],['EHF — extremamente alta frequência','30 – 300 GHz (1 cm – 1 mm)','#e09a0a','5G de ondas milimétricas e radioastronomia']],
+3:[['Infravermelho distante (IR-C)','3 µm – 1 mm (0,3 – 100 THz)','#b3342d','calor irradiado por corpos e termografia'],['Infravermelho médio (IR-B)','1,4 – 3 µm (100 – 214 THz)','#d4423a','sensores de gás e espectroscopia'],['Infravermelho próximo (IR-A)','700 nm – 1,4 µm (214 – 428 THz)','#ef6a60','controle remoto, fibras ópticas e visão noturna']],
+5:[['UV-A','315 – 400 nm (750 – 950 THz)','#b78ae0','atravessa a atmosfera; bronzeamento, envelhecimento da pele e luz negra'],['UV-B','280 – 315 nm (950 THz – 1,07 PHz)','#a56ad8','em parte retido pela camada de ozônio; queimaduras e vitamina D'],['UV-C','100 – 280 nm (1,07 – 3 PHz)','#8f4fc8','quase todo retido pelo ozônio; esterilização (germicida)'],['UV extremo','10 – 100 nm (3 – 30 PHz)','#7a3bb5','litografia de chips e astronomia solar']],
+6:[['Raios X moles','0,1 – 10 nm (30 PHz – 3 EHz)','#bdbdbd','astronomia e microscopia de alta resolução'],['Raios X duros','10 – 100 pm (3 – 30 EHz)','#8c8c8c','radiografia, tomografia e segurança em aeroportos']],
+7:[['Gama de decaimento nuclear','124 keV – 10 MeV (10 – 0,12 pm)','#b0b0b0','radioterapia e medicina nuclear (PET)'],['Gama de alta energia','10 MeV – 100 GeV (0,12 – 1,2×10⁻⁵ pm)','#d0d0d0','raios cósmicos e fenômenos astrofísicos'],['Gama de muito alta energia','acima de 100 GeV','#f0f0f0','detectados por telescópios Cherenkov']]
+};
 function pickReg(i){
  const r=RG[i],c=$('#ec');
  document.querySelectorAll('#ev [data-i]').forEach(g=>g.querySelector('rect').setAttribute('stroke',+g.dataset.i===i?'#fff':'none'));
@@ -606,9 +616,9 @@ function pickReg(i){
  P('Frequência: '+r.fs);P('Comprimento de onda: '+r.ls);
  P('Energia do fóton: '+(r.b>=1e30?'acima de '+nf(HE*r.a):nf(HE*r.a)+' – '+nf(HE*r.b))+' eV');
  P(r.io);
- const L=(t,items,dot)=>{P(t);const u=document.createElement('ul');items.forEach(it=>{const li=document.createElement('li');if(dot){const s=document.createElement('span');s.className='cdot';s.style.background=it[2];li.append(s,it[0]+' · '+it[1])}else li.textContent=it;u.appendChild(li)});c.appendChild(u)};
+ const L=(t,items,dot)=>{P(t);const u=document.createElement('ul');items.forEach(it=>{const li=document.createElement('li');if(dot){const s=document.createElement('span');s.className='cdot';s.style.background=it[2];li.append(s,it[0]+' · '+it[1]+(it[3]?' — '+it[3]:''))}else li.textContent=it;u.appendChild(li)});c.appendChild(u)};
  L('Aplicações e exemplos:',r.ap);
- if(r.g)L('Cores:',VC,true);
+ {const sb=i===4?VC:SUB[i];if(sb)L(i===4?'Cores:':SUBT[i]||'Faixas:',sb,true)}
 }
 function initEsp(){
  if(initEsp.d)return;initEsp.d=1;

@@ -293,7 +293,7 @@ function sync(){
 }
 function press(k){
  const s=k.i;
- buzz(s==='@eq'?70:35);
+ buzz(s==='@eq'?1:0);
  if(s==='@inv'){inv=!inv;sync();return}
  if(s==='@deg'){deg=!deg;sync();render();return}
  if(s==='@hist'){openHist();return}
@@ -319,7 +319,7 @@ function eq(){
   const v=evaluate(expr),r=fmt(v);
   lastEx=expr;lastRes=r;ans=v;evald=true;
   hist.unshift({e:expr,r});hist=hist.slice(0,40);save();
- }catch(e){err=true;buzz([90,60,90])}
+ }catch(e){err=true;buzz(2)}
  render();
 }
 function render(){
@@ -387,12 +387,19 @@ document.querySelectorAll('.mn [data-m]').forEach(b=>b.onclick=()=>{hideMenu();s
 $('#th').onclick=()=>openHist();
 
 /* ---------- vibração ---------- */
-let vib=true;
-try{vib=localStorage.getItem('calc-vib')!=='0'}catch(e){}
-const buzz=p=>{if(vib&&navigator.vibrate){try{navigator.vibrate(p)}catch(e){}}};
+// níveis: [tecla, igual, erro, teste]; 0 = desligada
+const VL=[null,[35,70,[90,60,90],80],[70,130,[160,80,160],160],[120,200,[250,100,250],260]],VN=['Off','Fraca','Média','Forte'];
+let vl=2;
+try{const q=localStorage.getItem('calc-vibl');if(q!==null)vl=Math.min(3,Math.max(0,+q||0));else if(localStorage.getItem('calc-vib')==='0')vl=0}catch(e){}
+const buzz=k=>{const L=VL[vl];if(L&&navigator.vibrate){try{navigator.vibrate(L[k])}catch(e){}}};
 const tv=$('#tv');
-tv.classList.toggle('on',vib);tv.setAttribute('aria-pressed',vib);
-tv.onclick=()=>{vib=!vib;tv.classList.toggle('on',vib);tv.setAttribute('aria-pressed',vib);try{localStorage.setItem('calc-vib',vib?'1':'0')}catch(e){}if(vib){let ok=false;try{ok=navigator.vibrate&&navigator.vibrate(120)}catch(e){}if(!ok)$('#ex').textContent='Vibração não disponível neste navegador'}};
+const tvUp=()=>{tv.textContent='\ud83d\udcf3 '+VN[vl];tv.classList.toggle('on',vl>0);tv.setAttribute('aria-pressed',vl>0);tv.setAttribute('aria-label','Vibração: '+VN[vl])};
+tvUp();
+tv.onclick=()=>{
+ vl=(vl+1)%4;tvUp();
+ try{localStorage.setItem('calc-vibl',vl)}catch(e){}
+ if(vl){let ok=false;try{ok=navigator.vibrate&&navigator.vibrate(VL[vl][3])}catch(e){}if(!ok)$('#ex').textContent='Vibração não disponível neste navegador'}
+};
 
 /* ---------- tabela periódica ---------- */
 const E='H Hidrogênio 1.008|He Hélio 4.0026|Li Lítio 6.94|Be Berílio 9.0122|B Boro 10.81|C Carbono 12.011|N Nitrogênio 14.007|O Oxigênio 15.999|F Flúor 18.998|Ne Neônio 20.180|Na Sódio 22.990|Mg Magnésio 24.305|Al Alumínio 26.982|Si Silício 28.085|P Fósforo 30.974|S Enxofre 32.06|Cl Cloro 35.45|Ar Argônio 39.948|K Potássio 39.098|Ca Cálcio 40.078|Sc Escândio 44.956|Ti Titânio 47.867|V Vanádio 50.942|Cr Cromo 51.996|Mn Manganês 54.938|Fe Ferro 55.845|Co Cobalto 58.933|Ni Níquel 58.693|Cu Cobre 63.546|Zn Zinco 65.38|Ga Gálio 69.723|Ge Germânio 72.630|As Arsênio 74.922|Se Selênio 78.971|Br Bromo 79.904|Kr Criptônio 83.798|Rb Rubídio 85.468|Sr Estrôncio 87.62|Y Ítrio 88.906|Zr Zircônio 91.224|Nb Nióbio 92.906|Mo Molibdênio 95.95|Tc Tecnécio (98)|Ru Rutênio 101.07|Rh Ródio 102.91|Pd Paládio 106.42|Ag Prata 107.87|Cd Cádmio 112.41|In Índio 114.82|Sn Estanho 118.71|Sb Antimônio 121.76|Te Telúrio 127.60|I Iodo 126.90|Xe Xenônio 131.29|Cs Césio 132.91|Ba Bário 137.33|La Lantânio 138.91|Ce Cério 140.12|Pr Praseodímio 140.91|Nd Neodímio 144.24|Pm Promécio (145)|Sm Samário 150.36|Eu Európio 151.96|Gd Gadolínio 157.25|Tb Térbio 158.93|Dy Disprósio 162.50|Ho Hólmio 164.93|Er Érbio 167.26|Tm Túlio 168.93|Yb Itérbio 173.05|Lu Lutécio 174.97|Hf Háfnio 178.49|Ta Tântalo 180.95|W Tungstênio 183.84|Re Rênio 186.21|Os Ósmio 190.23|Ir Irídio 192.22|Pt Platina 195.08|Au Ouro 196.97|Hg Mercúrio 200.59|Tl Tálio 204.38|Pb Chumbo 207.2|Bi Bismuto 208.98|Po Polônio (209)|At Astato (210)|Rn Radônio (222)|Fr Frâncio (223)|Ra Rádio (226)|Ac Actínio (227)|Th Tório 232.04|Pa Protactínio 231.04|U Urânio 238.03|Np Netúnio (237)|Pu Plutônio (244)|Am Amerício (243)|Cm Cúrio (247)|Bk Berquélio (247)|Cf Califórnio (251)|Es Einstênio (252)|Fm Férmio (257)|Md Mendelévio (258)|No Nobélio (259)|Lr Laurêncio (266)|Rf Rutherfórdio (267)|Db Dúbnio (268)|Sg Seabórgio (269)|Bh Bóhrio (270)|Hs Hássio (277)|Mt Meitnério (278)|Ds Darmstádtio (281)|Rg Roentgênio (282)|Cn Copernício (285)|Nh Nihônio (286)|Fl Fleróvio (289)|Mc Moscóvio (290)|Lv Livermório (293)|Ts Tenesso (294)|Og Oganessônio (294)'.split('|').map((s,i)=>{const[a,n,m]=s.split(' ');return{z:i+1,s:a,n,m}});

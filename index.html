@@ -135,6 +135,7 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .tn>b{display:block;font-size:15px}
 .tn>small{display:block;opacity:.75;font-size:12px;margin-bottom:2px}
 .pv p{margin:2px 0;font-size:13px;line-height:1.5;opacity:.9}
+.pv svg{width:100%;height:auto;flex:none;display:block}
 .cdot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px}
 .md{position:absolute;inset:0;z-index:5;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;padding:14px}
 .mp{background:var(--body);color:var(--txt);border-radius:14px;width:100%;max-height:100%;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 30px rgba(0,0,0,.5)}
@@ -711,6 +712,34 @@ function showPart(p){
  const b=document.createElement('div');b.className='tp';b.textContent='Descoberta: '+p[8]+' — '+p[9]+'\n\n'+p[13];
  t.append(hr,a,b);openEl($('#pm'));
 }
+function diag(){
+ const G=[['b','#9fd3ff','#0b4fa8'],['r','#ffa79d','#9a1511'],['g','#a8ec96','#1b7f1b'],['y','#fff59a','#d19a00'],['m','#ee9bc4','#69103f'],['p','#d8a8ff','#5a1fa3'],['t','#b5e6df','#3b8f86'],['o','#ffc78f','#b34a00']];
+ const sp=(x,y,r,k)=>'<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="url(#g'+k+')"/>';
+ const tx=(x,y,t,z,w,a)=>'<text x="'+x+'" y="'+y+'" font-size="'+z+'" font-weight="'+(w||400)+'" text-anchor="'+(a||'start')+'" fill="currentColor">'+t+'</text>';
+ const ln=d=>'<path d="'+d+'" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".6"/>';
+ let s='<svg viewBox="0 0 380 620" role="img" aria-label="Diagrama do Modelo Padrão da Física de Partículas"><defs>'+G.map(g=>'<radialGradient id="g'+g[0]+'" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="'+g[1]+'"/><stop offset="1" stop-color="'+g[2]+'"/></radialGradient>').join('')+'</defs>';
+ s+=tx(190,16,'Modelo Padrão da Física de Partículas',13,700,'middle');
+ s+=sp(46,70,20,'b')+tx(46,106,'LÉPTONS',11,700,'middle')+tx(46,118,'(férmions)',8.5,400,'middle');
+ s+=sp(160,70,20,'r')+tx(160,106,'BÓSONS',11,700,'middle')+tx(160,118,'(transmitem as forças)',8.5,400,'middle');
+ s+=sp(300,70,20,'g')+tx(300,106,'HÁDRONS',11,700,'middle')+tx(300,118,'(compostos de quarks)',8.5,400,'middle');
+ s+=ln('M46,126V240M46,160H62M46,200H62M46,240H62');
+ [['Múons',160,'b'],['Neutrinos',200,'b'],['Elétrons',240,'p']].forEach(a=>{s+=sp(72,a[1],8,a[2])+tx(86,a[1]+4,a[0],10.5,700)});
+ s+=ln('M160,126V280M160,160H176M160,200H176M160,240H176M160,280H176');
+ [['Fótons',160],['W e Z',200],['Glúons',240],['Higgs',280]].forEach(a=>{s+=sp(186,a[1],8,'r')+tx(200,a[1]+4,a[0],10.5,700)});
+ s+=ln('M300,126V138H262V315M262,165H276M262,315H276');
+ s+=sp(288,165,12,'y')+tx(306,162,'BÁRIONS',10.5,700)+tx(306,174,'3 quarks',8.5)+sp(311,186,4,'t')+sp(323,186,4,'t')+sp(335,186,4,'t');
+ s+=ln('M288,177V250M288,222H298M288,250H298')+sp(306,222,8,'b')+tx(319,226,'Prótons',10.5,700)+sp(306,250,8,'o')+tx(319,254,'Nêutrons',10.5,700);
+ s+=sp(288,315,12,'m')+tx(306,312,'MÉSONS',10.5,700)+tx(306,324,'2 quarks',8.5)+sp(311,336,4,'t')+sp(323,336,4,'t');
+ s+=ln('M288,327V393M288,365H298M288,393H298')+sp(306,365,8,'m')+tx(319,369,'Pi-mésons',10.5,700)+sp(306,393,8,'m')+tx(319,397,'K-mésons',10.5,700);
+ s+=tx(80,440,'ÁTOMO',11,700,'middle');
+ [0,60,120].forEach(a=>{s+='<g transform="rotate('+a+' 80 490)"><ellipse cx="80" cy="490" rx="42" ry="14" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".55"/>'+sp(122,490,4,'p')+'</g>'});
+ s+=sp(76,486,6,'b')+sp(84,488,6,'o')+sp(76,495,6,'o')+sp(85,496,6,'b');
+ s+=tx(152,470,'Núcleo (hádrons)',11,700)+tx(152,484,'prótons (azul) e nêutrons (laranja)',9.5);
+ s+=tx(152,506,'Eletrosfera (léptons)',11,700)+tx(152,520,'elétrons (roxo)',9.5);
+ s+='<rect x="8" y="566" width="364" height="44" rx="8" fill="none" stroke="currentColor" stroke-width="1" opacity=".5"/>';
+ s+=tx(190,584,'Férmions são as partículas que constituem a matéria.',9.5,400,'middle')+tx(190,598,'Bósons são as partículas que transmitem as forças.',9.5,400,'middle');
+ return s+'</svg>';
+}
 function initPart(){
  if(initPart.d)return;initPart.d=1;
  const g=$('#pg');
@@ -735,7 +764,7 @@ function initPart(){
    v1.appendChild(d);
   });
  });
- $('#pv2').innerHTML='<div class="tn" style="--c:#4aa3e8"><b>Férmions</b><small>constituem a matéria</small>'
+ $('#pv2').innerHTML=diag()+'<div class="tn" style="--c:#4aa3e8"><b>Férmions</b><small>constituem a matéria</small>'
   +'<div class="tn" style="--c:#2f80ed"><b>Léptons</b><small>elétron, múon, tau e seus três neutrinos</small></div>'
   +'<div class="tn" style="--c:#a56ad8"><b>Quarks</b><small>up, down, charm, strange, top e bottom</small></div>'
   +'<div class="tn" style="--c:#e0b020"><b>Hádrons</b><small>partículas compostas por quarks</small>'

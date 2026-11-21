@@ -69,6 +69,15 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
 .conv #cu{padding:14px;background:var(--amber);color:#2a1d04;font-weight:700}
 #crw{display:flex;flex-direction:column;gap:6px;font-size:13px}
 #crw input{flex:none}
+.imcf{display:flex;flex-direction:column;gap:4px;color:var(--txt);font-size:14px}
+.imcf input{flex:none}
+.gen{display:flex;gap:8px}
+.gen button{flex:1;padding:12px;font-size:16px;background:var(--dark)}
+.gen button.on{box-shadow:inset 0 0 0 2px var(--amber);color:var(--amber)}
+#imcr{display:flex;flex-direction:column;gap:6px;color:var(--txt);font-size:14px;line-height:1.5}
+#imcr output{flex:none;font-size:34px}
+#imcr b{font-size:18px}
+.conv #imck{padding:14px;background:var(--amber);color:#2a1d04;font-weight:700}
 .cmh{margin:2px 0;font-size:15px;color:var(--txt)}
 .cm{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
 .cm button{padding:16px 8px;font-size:16px}
@@ -170,6 +179,16 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
     <div id="crw" hidden><small>Cotação: quanto vale 1 da moeda de origem na moeda de destino</small><input id="cr" inputmode="decimal" placeholder="ex.: 5,50" aria-label="Cotação"></div>
     <button id="cu" type="button">Usar na calculadora</button>
     </div>
+    <div class="cpanel" id="imc" hidden>
+    <div class="cb"><button id="imcbk" type="button">← Grandezas</button><b>IMC</b></div>
+    <label class="imcf">Idade (anos)<input id="imca" inputmode="numeric" placeholder="Inserir idade"></label>
+    <div class="imcf">Gênero<div class="gen"><button type="button" id="gm" class="on">♂ Masculino</button><button type="button" id="gf">♀ Feminino</button></div></div>
+    <label class="imcf">Altura (cm)<input id="imch" inputmode="decimal" placeholder="Inserir altura"></label>
+    <label class="imcf">Peso (kg)<input id="imcp" inputmode="decimal" placeholder="Inserir peso"></label>
+    <button id="imck" type="button">Calcular</button>
+    <div id="imcr" hidden><output id="imcv">—</output><b id="imcc"></b><span id="imcn"></span></div>
+    <small class="vazio">O IMC é o peso em quilogramas dividido pelo quadrado da altura em metros. É um método fácil para categorizar o peso, mas não substitui avaliação médica.</small>
+    </div>
   </section>
   <section class="part" id="part" hidden aria-label="Partículas subatômicas">
     <div class="seg" id="seg"><button type="button" data-v="0" class="on">Modelo Padrão</button><button type="button" data-v="1">Hádrons</button><button type="button" data-v="2">Classificação</button></div>
@@ -193,7 +212,7 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
     <div class="mnh"><b>Menu</b><button type="button" id="mnx" aria-label="Fechar menu">×</button></div>
     <button type="button" data-m="sci"><span class="ic">🧮</span><span><b>Científica</b><small>Funções, trigonometria e logaritmos</small></span></button>
     <button type="button" data-m="basic"><span class="ic">🔢</span><span><b>Básica</b><small>Operações simples</small></span></button>
-    <button type="button" data-m="conv"><span class="ic">🔄</span><span><b>Conversor</b><small>21 grandezas e unidades</small></span></button>
+    <button type="button" data-m="conv"><span class="ic">🔄</span><span><b>Conversor</b><small>21 grandezas, unidades e IMC</small></span></button>
     <button type="button" data-m="tab"><span class="ic">⚛️</span><span><b>Tabela periódica</b><small>118 elementos e suas propriedades</small></span></button>
     <button type="button" data-m="esp"><span class="ic">🌈</span><span><b>Espectro eletromagnético</b><small>Do rádio aos raios gama</small></span></button>
     <button type="button" data-m="part"><span class="ic">🔬</span><span><b>Partículas subatômicas</b><small>Modelo Padrão, hádrons e classificação</small></span></button>
@@ -886,12 +905,32 @@ function conv(){
  }
  $('#co').textContent=r;
 }
-function showConv(on){$('#cp').hidden=!on;$('#cm').hidden=on;$('#cmh').hidden=on;$('#cbt').textContent=$('#cc').value}
+function showConv(on){$('#imc').hidden=true;$('#cp').hidden=!on;$('#cm').hidden=on;$('#cmh').hidden=on;$('#cbt').textContent=$('#cc').value}
 $('#cbk').onclick=()=>showConv(false);
+function showImc(){$('#cm').hidden=true;$('#cmh').hidden=true;$('#cp').hidden=true;$('#imc').hidden=false;$('#imcr').hidden=true}
+$('#imcbk').onclick=()=>showConv(false);
+$('#gm').onclick=()=>{$('#gm').classList.add('on');$('#gf').classList.remove('on')};
+$('#gf').onclick=()=>{$('#gf').classList.add('on');$('#gm').classList.remove('on')};
+function calcImc(){
+ const n=id=>parseFloat($(id).value.replace(',','.'));
+ const a=n('#imca'),h=n('#imch')/100,p=n('#imcp'),r=$('#imcr');
+ r.hidden=false;
+ if(!(h>0.3&&h<2.8)||!(p>0&&p<700)){$('#imcv').textContent='—';$('#imcc').textContent='';$('#imcn').textContent='Informe altura (cm) e peso (kg) válidos.';return}
+ const v=p/(h*h),f=x=>x.toFixed(1).replace('.',',');
+ let c,faixa;
+ if(a>0&&a<18){c='Para menores de 18 anos o IMC é avaliado em curvas de percentil por idade e sexo.';faixa=null}
+ else if(a>=60){c=v<22?'Baixo peso':v<=27?'Peso adequado':'Sobrepeso';faixa=[22*h*h,27*h*h]}
+ else{c=v<18.5?'Abaixo do peso':v<25?'Peso normal':v<30?'Sobrepeso':v<35?'Obesidade grau I':v<40?'Obesidade grau II':'Obesidade grau III';faixa=[18.5*h*h,24.9*h*h]}
+ $('#imcv').textContent=f(v);
+ $('#imcc').textContent=faixa?c:'';
+ $('#imcn').textContent=(faixa?'Faixa de peso adequada para '+Math.round(h*100)+' cm: '+f(faixa[0])+' a '+f(faixa[1])+' kg.'+(a>=60?' (critério para idosos, 60 anos ou mais)':''):c);
+}
+$('#imck').onclick=calcImc;
 function initConv(){
  if(initConv.d)return;initConv.d=1;
  Object.keys(U).forEach(n=>{const o=document.createElement('option');o.value=o.textContent=n;$('#cc').appendChild(o)});
  Object.keys(U).forEach(n=>{const b=document.createElement('button');b.type='button';b.textContent=n;b.onclick=()=>{$('#cc').value=n;fillUnits();conv();showConv(true)};$('#cm').appendChild(b)});
+ const bi=document.createElement('button');bi.type='button';bi.textContent='IMC';bi.onclick=showImc;$('#cm').appendChild(bi);
  fillUnits();
 }
 $('#cc').onchange=()=>{fillUnits();conv()};

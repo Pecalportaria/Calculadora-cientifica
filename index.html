@@ -294,9 +294,13 @@ function fmt(v){
  if(v===0)return '0';
  const a=Math.abs(v);let s;
  if(a>=1e12||a<1e-6)s=v.toExponential(9).replace(/\.?0+e/,'e').replace('e+','E').replace('e','E');
- else s=String(parseFloat(v.toPrecision(12)));
+ else{
+  const q=String(parseFloat(v.toPrecision(12))).split('.');
+  return q[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+(q[1]?','+q[1]:'');
+ }
  return s.replace('.',',');
 }
+const grpD=t=>String(t).replace(/(?<![\d,E])\d{4,}/g,m=>m.replace(/\B(?=(\d{3})+$)/g,'.'));
 
 /* ---------- teclas ---------- */
 // a=rótulo, b=rótulo 2nd, i=inserir, j=inserir 2nd, c=classe
@@ -347,6 +351,7 @@ function press(k){
  if(inv&&k.j){inv=false;sync()}
 }
 function put(s){
+ s=String(s).replace(/\./g,'');
  err=false;
  if(evald){evald=false;expr=/^[+−×÷^!%]/.test(s)?'Ans':''}
  expr+=s;render();
@@ -362,14 +367,14 @@ function eq(){
 }
 function render(){
  const ex=$('#ex'),res=$('#res');
- ex.textContent=evald?lastEx+' =':expr;
+ ex.textContent=evald?grpD(lastEx)+' =':grpD(expr);
  let r='0';
  if(err)r='Erro';
  else if(evald)r=lastRes;
  else if(expr){
   r='';
   if(!/^[\d,.]+$/.test(expr)){try{r=fmt(evaluate(expr))}catch(e){}}
-  else r=expr;
+  else r=grpD(expr);
  }
  res.textContent=r||'\u00a0';
  ex.scrollLeft=ex.scrollWidth;res.scrollLeft=res.scrollWidth;
@@ -382,7 +387,7 @@ function openHist(){
  hist.forEach(h=>{
   const b=document.createElement('button');b.type='button';b.className='he';
   const s=document.createElement('span'),v=document.createElement('b');
-  s.textContent=h.e;v.textContent='= '+h.r;b.append(s,v);
+  s.textContent=grpD(h.e);v.textContent='= '+grpD(h.r);b.append(s,v);
   b.onclick=()=>{$('#hist').classList.remove('open');put(h.r)};
   l.appendChild(b);
  });
@@ -870,7 +875,7 @@ U['Massa'].push(['arroba',15]);
 const D={'Corrente elétrica':[4,3],'Quantidade de substância':[4,3],'Intensidade luminosa':[2,1],'Distância':[5,6],'Temperatura':[0,1],'Moeda':[1,0],'Bases':[0,1],'Consumo':[0,1],'Ângulo':[0,1],'Densidade':[1,0]};
 const toK={'km/L':v=>v,'L/100 km':v=>100/v,'mpg':v=>v*0.425143707},fromK={'km/L':v=>v,'L/100 km':v=>100/v,'mpg':v=>v/0.425143707};
 function special(){
- const cat=$('#cc').value,f=$('#cf').value,t=$('#ct').value,raw=$('#cv').value.trim();
+ const cat=$('#cc').value,f=$('#cf').value,t=$('#ct').value,raw=$('#cv').value.trim().replace(/(?<=\d)\.(?=\d{3}(\D|$))/g,'');
  const out=s=>{$('#co').textContent=s;return true};
  if(cat==='Bases'){
   const B={'decimal':[10,/^-?[0-9]+$/],'binário':[2,/^-?[01]+$/],'octal':[8,/^-?[0-7]+$/],'hexadecimal':[16,/^-?[0-9a-f]+$/i]};
@@ -878,11 +883,11 @@ function special(){
   const n=parseInt(raw,B[f][0]);
   return out(Number.isSafeInteger(n)?n.toString(B[t][0]).toUpperCase():'—');
  }
- const x=parseFloat(raw.replace(',','.'));
+ const x=parseFloat(raw.replace(/\./g,'').replace(',','.'));
  if(cat==='Moeda'){
   const r=parseFloat($('#cr').value.replace(',','.'));
   try{localStorage.setItem('calc-rate',$('#cr').value)}catch(e){}
-  return out(isNaN(x)||!(r>0)?'—':(x*r).toFixed(2).replace('.',','));
+  return out(isNaN(x)||!(r>0)?'—':(q=>q[0].replace(/\B(?=(\d{3})+(?!\d))/g,'.')+','+q[1])((x*r).toFixed(2).split('.')));
  }
  if(cat==='Consumo'){
   const v=isNaN(x)?NaN:fromK[t](toK[f](x));
@@ -892,6 +897,7 @@ function special(){
 }
 function fillUnits(){
  const cat=$('#cc').value,L=U[cat],d=D[cat]||[1,2];
+ if(cat==='Bases')$('#cv').value=$('#cv').value.replace(/\./g,'');else fmtCv();
  $('#crw').hidden=cat!=='Moeda';$('#cu').hidden=cat==='Bases';$('#cv').inputMode=cat==='Bases'?'text':'decimal';
  [['#cf',d[0]],['#ct',d[1]]].forEach(([s,idx])=>{
   const e=$(s);e.textContent='';
@@ -901,7 +907,7 @@ function fillUnits(){
 }
 function conv(){
  if(special())return;
- const cat=$('#cc').value,L=U[cat],f=$('#cf').value,t=$('#ct').value,x=parseFloat($('#cv').value.replace(',','.'));
+ const cat=$('#cc').value,L=U[cat],f=$('#cf').value,t=$('#ct').value,x=parseFloat($('#cv').value.replace(/\./g,'').replace(',','.'));
  let r='—';
  if(!isNaN(x)){
   const v=cat==='Temperatura'?fromC[t](toC[f](x)):x*L.find(u=>u[0]===f)[1]/L.find(u=>u[0]===t)[1];
@@ -910,6 +916,17 @@ function conv(){
  $('#co').textContent=r;
 }
 function showConv(on){$('#imc').hidden=true;$('#cp').hidden=!on;$('#cm').hidden=on;$('#cmh').hidden=on;$('#cbt').textContent=$('#cc').value}
+function fmtCv(){
+ const el=$('#cv');if($('#cc').value==='Bases')return;
+ const v=el.value,pos=el.selectionStart==null?v.length:el.selectionStart;
+ const sig=v.slice(0,pos).replace(/\./g,'').length,raw=v.replace(/\./g,'');
+ const m=/^(-?)(\d*)(,?\d*)$/.exec(raw);if(!m)return;
+ const nv=m[1]+m[2].replace(/\B(?=(\d{3})+$)/g,'.')+m[3];
+ if(nv===v)return;
+ el.value=nv;let c=0,np=0;while(np<nv.length&&c<sig){if(nv[np]!=='.')c++;np++}
+ try{el.setSelectionRange(np,np)}catch(e){}
+}
+$('#cv').addEventListener('input',fmtCv);
 $('#cbk').onclick=()=>showConv(false);
 function showImc(){$('#cm').hidden=true;$('#cmh').hidden=true;$('#cp').hidden=true;$('#imc').hidden=false;$('#imcr').hidden=true}
 $('#imcbk').onclick=()=>showConv(false);

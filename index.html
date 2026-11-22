@@ -212,7 +212,7 @@ button:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
     <div class="mnh"><b>Menu</b><button type="button" id="mnx" aria-label="Fechar menu">×</button></div>
     <button type="button" data-m="sci"><span class="ic">🧮</span><span><b>Científica</b><small>Funções, trigonometria e logaritmos</small></span></button>
     <button type="button" data-m="basic"><span class="ic">🔢</span><span><b>Básica</b><small>Operações simples</small></span></button>
-    <button type="button" data-m="conv"><span class="ic">🔄</span><span><b>Conversor</b><small>21 grandezas, unidades e IMC</small></span></button>
+    <button type="button" data-m="conv"><span class="ic">🔄</span><span><b>Conversor</b><small>25 grandezas, unidades e IMC</small></span></button>
     <button type="button" data-m="tab"><span class="ic">⚛️</span><span><b>Tabela periódica</b><small>118 elementos e suas propriedades</small></span></button>
     <button type="button" data-m="esp"><span class="ic">🌈</span><span><b>Espectro eletromagnético</b><small>Do rádio aos raios gama</small></span></button>
     <button type="button" data-m="part"><span class="ic">🔬</span><span><b>Partículas subatômicas</b><small>Modelo Padrão, hádrons e classificação</small></span></button>
@@ -836,7 +836,11 @@ tf.onclick=()=>{try{(document.fullscreenElement?document.exitFullscreen():docume
 /* ---------- conversor de unidades ---------- */
 const U={
  'Comprimento':[['mm',.001],['cm',.01],['m',1],['km',1000],['polegada',.0254],['pé',.3048],['jarda',.9144],['milha',1609.344]],
+ 'Distância':[['picômetro (pm)',1e-12],['nanômetro (nm)',1e-9],['micrômetro (µm)',1e-6],['milímetro (mm)',.001],['centímetro (cm)',.01],['metro (m)',1],['quilômetro (km)',1000],['UA (unidade astronômica)',149597870700],['ano-luz',9460730472580800]],
  'Massa':[['mg',1e-6],['g',.001],['kg',1],['tonelada',1000],['onça',.028349523125],['libra',.45359237]],
+ 'Corrente elétrica':[['picoampère (pA)',1e-12],['nanoampère (nA)',1e-9],['microampère (µA)',1e-6],['miliampère (mA)',.001],['ampère (A)',1],['quiloampère (kA)',1000],['megaampère (MA)',1e6]],
+ 'Quantidade de substância':[['picomol (pmol)',1e-12],['nanomol (nmol)',1e-9],['micromol (µmol)',1e-6],['milimol (mmol)',.001],['mol',1],['quilomol (kmol)',1000]],
+ 'Intensidade luminosa':[['microcandela (µcd)',1e-6],['milicandela (mcd)',.001],['candela (cd)',1],['quilocandela (kcd)',1000]],
  'Área':[['cm²',1e-4],['m²',1],['hectare',1e4],['km²',1e6],['pé²',.09290304],['acre',4046.8564224]],
  'Volume':[['mL',.001],['L',1],['m³',1000],['galão EUA',3.785411784],['fl oz EUA',.0295735295625]],
  'Velocidade':[['m/s',1],['km/h',1/3.6],['mph',.44704],['nó',1852/3600]],
@@ -863,7 +867,7 @@ Object.assign(U,{
 U['Comprimento'].push(['braça',2.2],['légua (6,6 km)',6600],['milha náutica',1852]);
 U['Área'].push(['alqueire paulista',24200],['alqueire mineiro',48400]);
 U['Massa'].push(['arroba',15]);
-const D={'Temperatura':[0,1],'Moeda':[1,0],'Bases':[0,1],'Consumo':[0,1],'Ângulo':[0,1],'Densidade':[1,0]};
+const D={'Corrente elétrica':[4,3],'Quantidade de substância':[4,3],'Intensidade luminosa':[2,1],'Distância':[5,6],'Temperatura':[0,1],'Moeda':[1,0],'Bases':[0,1],'Consumo':[0,1],'Ângulo':[0,1],'Densidade':[1,0]};
 const toK={'km/L':v=>v,'L/100 km':v=>100/v,'mpg':v=>v*0.425143707},fromK={'km/L':v=>v,'L/100 km':v=>100/v,'mpg':v=>v/0.425143707};
 function special(){
  const cat=$('#cc').value,f=$('#cf').value,t=$('#ct').value,raw=$('#cv').value.trim();

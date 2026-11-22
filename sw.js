@@ -1,6 +1,6 @@
-/* Cache rápido: abre na hora a partir do celular e atualiza em segundo plano. */
-const V = 'calc-cache-v2';
-const BASE = ['./', 'manifest.json', 'icon-192.png'];
+/* Cache rápido: abre na hora a partir do celular, inclusive sem internet. */
+const V = 'calc-cache-v3';
+const BASE = ['./', 'index.html', 'manifest.json', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -21,14 +21,22 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const r = e.request;
   if (r.method !== 'GET' || new URL(r.url).origin !== location.origin) return;
-  e.respondWith(
-    caches.open(V).then(async c => {
-      const hit = await c.match(r, { ignoreSearch: true });
-      const net = fetch(r)
-        .then(res => { if (res && res.ok) c.put(r, res.clone()); return res; })
-        .catch(() => hit);
-      e.waitUntil(net.catch(() => {}));
-      return hit || net;
-    })
-  );
+  e.respondWith((async () => {
+    const c = await caches.open(V);
+    const hit = await c.match(r, { ignoreSearch: true });
+    const net = fetch(r).then(res => { if (res && res.ok) c.put(r, res.clone()); return res; });
+    e.waitUntil(net.catch(() => {}));
+    if (hit) return hit;                       // abre na hora do cache
+    try {                                       // sem cache: rede, mas sem esperar para sempre
+      return await Promise.race([net, new Promise((_, j) => setTimeout(j, 3000))]);
+    } catch (err) {
+      if (r.mode === 'navigate') {              // plano B: qualquer página já guardada
+        for (const k of await c.keys()) {
+          const p = new URL(k.url).pathname;
+          if (p.endsWith('.html') || p.endsWith('/')) return c.match(k);
+        }
+      }
+      return Response.error();
+    }
+  })());
 });

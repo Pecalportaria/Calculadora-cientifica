@@ -970,7 +970,10 @@ setMode('basic');
 const idle=f=>'requestIdleCallback' in window?requestIdleCallback(f,{timeout:6000}):setTimeout(f,3000);
 idle(()=>{initConv();idle(()=>{initTbl();idle(()=>{initEsp();idle(initPart)})})});
 sync();render();
-if('serviceWorker' in navigator){addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}))}
+addEventListener('load',()=>{
+ try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+ if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').then(()=>navigator.serviceWorker.ready).then(()=>caches.open('calc-cache-v3').then(c=>c.add(location.pathname+location.search))).catch(()=>{});
+});
 </script>
 </body>
 </html>
